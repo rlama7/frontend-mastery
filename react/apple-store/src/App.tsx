@@ -1,9 +1,10 @@
 import './App.css';
+import StoreDirectory from './components/StoreDirectory';
 
 function App() {
   return (
     <main>
-      <h1>Hello World!</h1>
+      <StoreDirectory />
     </main>
   );
 }
