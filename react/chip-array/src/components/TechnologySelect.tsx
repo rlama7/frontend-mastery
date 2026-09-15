@@ -7,6 +7,7 @@ import '../css/TechnologySelect.css';
 
 export const TechnologySelect = () => {
   const [technologies, setTechnologies] = useState<Technology[]>([]);
+  const [selectedTechnologies, setSelectedTechnologies] = useState<Technology[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -33,28 +34,52 @@ export const TechnologySelect = () => {
 
   const normalizedQuery = query.trim().toLowerCase();
 
-  const filteredTechnologies = technologies.filter((technology) =>
-    technology.label.toLocaleLowerCase().includes(normalizedQuery),
-  );
+  // const filteredTechnologies = technologies.filter((technology) =>
+  //   technology.label.toLocaleLowerCase().includes(normalizedQuery),
+  // );
+
+  const filteredTechnologies = technologies.filter((technology) => {
+    const matchesQuery = technology.label.toLowerCase().includes(normalizedQuery);
+
+    const isAlreadySelected = selectedTechnologies.some(
+      (selectedTechnology) => selectedTechnology.id === technology.id,
+    );
+
+    return matchesQuery && !isAlreadySelected;
+  });
+
+  const handleSelect = (technology: Technology) => {
+    setSelectedTechnologies((currentTechnologies) => [...currentTechnologies, technology]);
+
+    setQuery('');
+  };
 
   return (
-    <div className="">
+    <div className="technology-select">
       <label htmlFor="technology-input" className="">
         Technologies {''}
       </label>
-      <input
-        id="technology-input"
-        type="text"
-        className=""
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        onFocus={() => setIsOpen(true)}
-        onBlur={() => setIsOpen(false)}
-        role="combobox"
-        aria-autocomplete="list"
-        aria-expanded={isOpen}
-        aria-controls="technology-listbox"
-      />
+      <div className="technology-control">
+        {selectedTechnologies.map((technology) => (
+          <span key={technology.id} className="chip">
+            {technology.label}
+          </span>
+        ))}
+
+        <input
+          id="technology-input"
+          type="text"
+          className=""
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onFocus={() => setIsOpen(true)}
+          onBlur={() => setIsOpen(false)}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={isOpen}
+          aria-controls="technology-listbox"
+        />
+      </div>
 
       {isLoading && <p role="status">Loading technologies...</p>}
 
@@ -65,7 +90,13 @@ export const TechnologySelect = () => {
           {filteredTechnologies.length > 0 ? (
             <ul id="technology-listbox" role="listbox" aria-label="Technology suggestions">
               {filteredTechnologies.map((technology) => (
-                <li key={technology.id} role="option" aria-selected={false}>
+                <li
+                  key={technology.id}
+                  role="option"
+                  aria-selected={false}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => handleSelect(technology)}
+                >
                   {technology.label}
                 </li>
               ))}
